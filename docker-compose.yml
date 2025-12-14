@@ -1,0 +1,10 @@
+services:
+  printer-agent:
+    build: .
+    image: printer-agent-printer-agent
+    container_name: printer-agent
+    restart: unless-stopped
+    env_file:
+      - .env
+    command: ["python", "-u", "/app/agent.py"]
+    network_mode: host
