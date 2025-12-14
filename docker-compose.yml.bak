@@ -1,9 +1,0 @@
-version: "3.8"
-services:
-  printer-agent:
-    build: .
-    container_name: printer-agent
-    restart: unless-stopped
-    env_file:
-      - .env
-    network_mode: "host"
