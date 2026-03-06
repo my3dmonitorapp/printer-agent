@@ -196,3 +196,6 @@ cd printer-agent
 git pull
 docker compose up -d --build
 ```
+
+## notes: 
+The agent seems sensitive to power disruptions, especially if the Pi board is powered or restarted in different times from the printer board, i rare cases we noticed double inputs on My3dmonitor dashboard. make sure the 2 boards are powered at same time, and especially after the first installation a reboot of printer is suggested. 
