@@ -1,228 +1,55 @@
-# **My3DMonitor – Printer Agent**
+# My3DMonitor Printer Agent
 
-This repository contains the My3DMonitor Printer Agent, a lightweight Docker-based service that connects to Klipper / Moonraker and reports printer activity (prints, usage, heartbeat) to the My3DMonitor platform.
+Lightweight Docker agent for Klipper/Moonraker printers. It sends printer events to My3DMonitor.
 
-The agent is printer-agnostic and works with any Klipper-based printer (Voron, Anycubic, etc.).
+## Install
 
+1. Clone the repository:
 
+```bash
+git clone https://github.com/my3dmonitorapp/printer-agent
+cd printer-agent
+```
 
-Requirements
+2. Open `.env`:
 
-Before installing the agent, make sure your printer host has:
-
-&nbsp;   • Linux (Raspberry Pi OS, Armbian, etc.)
-
-&nbsp;   • Klipper + Moonraker running and connected
-
-&nbsp;   • Docker + Docker Compose plugin
-
-&nbsp;   • Internet access
-
-⚠️ Important
-
-This agent assumes Moonraker is reachable and stable before installation.
-
-
-
-##### 1\. Verify Klipper \& Moonraker
-
-SSH into your printer host and run:
-
-
-
-**systemctl is-active klipper**
-
-**systemctl is-active moonraker**
-
-
-
-Both must return active.
-
-Test Moonraker API:
-
-curl http://127.0.0.1:7125/printer/info
-
-If you get JSON output, Moonraker is ready.
-
-
-
-##### 2\. Install Docker (if not already installed)
-
-**sudo apt update**
-
-**sudo apt install -y ca-certificates curl git**
-
-**curl -fsSL https://get.docker.com | sudo sh**
-
-**sudo usermod -aG docker $USER**
-
-**newgrp docker**
-
-**sudo apt install -y docker-compose-plugin**
-
-Verify:
-
-**docker --version**
-
-**docker compose version**
-
-
-
-##### 3\. Clone the Printer Agent
-
-**cd ~**
-
-**git clone https://github.com/<YOUR\_GITHUB\_ORG>/printer-agent.git**
-
-**cd printer-agent**
-
-
-
-##### 4\. Configure the Agent
-
-Create your local environment file:
-
-
-
+```bash
 nano .env
+```
 
-Required fields to edit
+3. Edit only these fields:
+- `PRINTER_ID`
+- `AGENT_TOKEN`
+- `TZ`
+- Optional: `MATERIAL_NAME`, `FILAMENT_DIAMETER_MM`, `FILAMENT_DENSITY_G_CM3`
 
-\# Moonraker API (usually local)
+Do **not** edit anything below the `DO NOT EDIT BELOW THIS LINE` section.
 
-MOONRAKER\_URL=http://127.0.0.1:7125
+4. Start the agent:
 
+```bash
+docker compose up -d --build
+```
 
+5. Verify it is running:
 
-\# Unique printer identifier
+```bash
+docker compose ps
+docker compose logs -f
+```
 
-PRINTER\_ID= **" this part you need to write your printer ID "**
+## Where to get `PRINTER_ID` and `AGENT_TOKEN`
 
+After printer onboarding in the My3DMonitor dashboard, copy the generated `PRINTER_ID` and `AGENT_TOKEN` and paste them into `.env`.
 
+## Troubleshooting
 
-\# Webhook URL provided by My3DMonitor
-
-N8N\_WEBHOOK\_BASE=https://app.my3dmonitor.com/webhook/XXXX/printers
-
-
-
-\# Agent authentication token
-
-AGENT\_TOKEN= **" write you long token code "**
-
-
-
-\# Timezone (**important for daily stats, set it correctly**) 
-
-TZ=Europe/Rome
-
-Save and exit.
-
-❗ Do NOT commit .env
-
-It contains secrets and is ignored by Git.
-
-
-
-##### 5\. Start the Agent
-
-**docker compose up -d --build**
-
-Check status:
-
-**docker ps**
-
-View logs:
-
-**docker logs -f printer-agent**
-
-You should see:
-
-&nbsp;   • Agent startup
-
-&nbsp;   • One heartbeat event
-
-&nbsp;   • Print events when you start/finish a print
-
-
-
-##### 6\. Test the Installation
-
-&nbsp;   **1. Start a print from Mainsail / Fluidd**
-
-    **2. Verify:**
-
-        **◦ print\_started is sent once**
-
-        **◦ print\_finished is sent once**
-
-    **3. Confirm data appears in your My3DMonitor dashboard**
-
-**DONE**
-
-
-
-Updating the Agent
-
-To update to a new version:
-
-**cd ~/printer-agent**
-
-**git pull**
-
-**docker compose up -d --build**
-
-
-
-Uninstalling the Agent
-
-**cd ~/printer-agent**
-
-**docker compose down**
-
-
-
-Notes About \[mcu host]
-
-Some Klipper configurations include:
-
-\[mcu host]
-
-serial: /tmp/klipper\_host\_mcu
-
-⚠️ This is optional and advanced.
-
-&nbsp;   • Only required if you use pin: host:gpioXX
-
-&nbsp;   • Not required for standard printers
-
-&nbsp;   • If enabled without proper setup, Klipper will fail to start
-
-For most users, this section should be commented out or removed.
-
-
-
-Troubleshooting
-
-Moonraker 503 errors
-
-If logs show 503 Klippy Host not connected:
-
-&nbsp;   • Klipper is not ready
-
-&nbsp;   • Restart Klipper and Moonraker
-
-&nbsp;   • Fix printer connection before running the agent
-
-Duplicate events
-
-&nbsp;   • Ensure only one agent container is running
-
-&nbsp;   • Reboot the printer host if Klipper was unstable earlier
-
-
-
-License
-
-MIT License
-
+- Agent container not running:
+  - Run `docker compose ps` and `docker compose logs -f`.
+- Moonraker connection errors:
+  - Confirm Moonraker is reachable at `MOONRAKER_URL` (default `http://127.0.0.1:7125`).
+- No events in dashboard:
+  - Check `PRINTER_ID` and `AGENT_TOKEN` in `.env`.
+  - Ensure `N8N_WEBHOOK_BASE` is unchanged and still under `DO NOT EDIT BELOW THIS LINE`.
+- Wrong local timestamps:
+  - Set a valid IANA timezone in `TZ` (for example `Asia/Jakarta` or `Europe/Rome`).

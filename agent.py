@@ -1,4 +1,5 @@
 import os, time, json, requests, datetime, math, uuid, threading
+from zoneinfo import ZoneInfo
 
 # ---- Env ----
 MOONRAKER    = os.getenv("MOONRAKER_URL", "http://127.0.0.1:7125").rstrip("/")
@@ -21,16 +22,18 @@ if TOKEN:
 
 AGENT_VERSION = "0.1.0"
 
+try:
+    ZoneInfo(TZ)
+except Exception:
+    print(f"invalid TZ '{TZ}', falling back to UTC")
+    TZ = "UTC"
+
 # ---- Helpers ----
 def now_iso():
     return datetime.datetime.utcnow().replace(microsecond=0).isoformat() + "Z"
 
 def now_local_iso():
-    try:
-        from zoneinfo import ZoneInfo
-        return datetime.datetime.now(ZoneInfo(TZ)).replace(microsecond=0).isoformat()
-    except Exception:
-        return now_iso()
+    return datetime.datetime.now(ZoneInfo(TZ)).replace(microsecond=0).isoformat()
 
 def mm_to_grams(length_mm: float, diameter_mm: float = DIAMETER_MM, density_g_cm3: float = DENSITY_G_CM3) -> float:
     r = diameter_mm / 2.0
@@ -69,6 +72,10 @@ def heartbeat_loop(period_s=600):
 
 # ---- Main loop ----
 def main():
+    if not WEBHOOK_BASE:
+        print("ERROR: N8N_WEBHOOK_BASE is empty. Set it in .env and restart the agent.")
+        raise SystemExit(1)
+
     print(f"Agent starting for {PRINTER_ID} -> {WEBHOOK_URL}")
     # heartbeat in background
     threading.Thread(target=heartbeat_loop, args=(600,), daemon=True).start()
@@ -118,4 +125,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
