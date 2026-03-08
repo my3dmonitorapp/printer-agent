@@ -197,5 +197,13 @@ git pull
 docker compose up -d --build
 ```
 
+## Dashboard & Analytics
+
+This printer agent can be used with **My3DMonitor**, a SaaS dashboard for Klipper and Moonraker-based 3D printer farms.
+
+My3DMonitor helps track print activity, production cost, and profit per file, giving makers and small print farms a clearer view of their operations.
+
+Website: https://my3dmonitor.com
+
 ## notes: 
 The agent seems sensitive to power disruptions, especially if the Pi board is powered or restarted in different times from the printer board, i rare cases we noticed double inputs on My3dmonitor dashboard. make sure the 2 boards are powered at same time, and especially after the first installation a reboot of printer is suggested. 
