@@ -41,26 +41,30 @@ If this is your first SSH login, type `yes` and press Enter, then enter your pas
 First, check if Docker is already installed:
 
 ```bash
-docker --version
-```
-
-If you see a version number, Docker is installed. Continue to Step 3.
+docker --versionIf a version number is shown, Docker is already installed. Continue to the next step.
 
 If Docker is not installed, run:
 
-```bash
+sudo apt remove -y docker.io docker-compose docker-doc podman-docker containerd runc || true
 sudo apt update
-sudo apt install -y docker.io docker-compose-plugin
+sudo apt install -y ca-certificates curl gnupg
+sudo install -m 0755 -d /etc/apt/keyrings
+curl -fsSL https://download.docker.com/linux/debian/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+sudo chmod a+r /etc/apt/keyrings/docker.gpg
+echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/debian $(. /etc/os-release && echo $VERSION_CODENAME) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+sudo apt update
+sudo apt install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+sudo systemctl enable docker
+sudo systemctl start docker
 sudo usermod -aG docker $USER
+
+After running these commands, disconnect SSH and connect again so the group change takes effect.
+
+Verify installation with:
+
+docker --version
+docker compose version
 ```
-
-What these commands do:
-
-- `apt update`: refreshes package lists
-- `apt install`: installs Docker and Docker Compose plugin
-- `usermod -aG docker $USER`: allows your user to run Docker without `sudo`
-
-Important: after running these commands, disconnect SSH and connect again so group changes take effect.
 
 ## Step 3 — Download the agent
 
